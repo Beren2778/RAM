@@ -1,0 +1,39 @@
+---
+title: "Análisis de Datos de Actividad Física"
+author: "Tu Nombre"
+date: "2024-11-20"
+output: html_document
+---
+
+# Cargar librerías
+library(tidyverse)
+library(lubridate)
+
+# Cargar datos (ajusta el path)
+activity_data <- read.csv("activity.csv")
+
+# Convertir la columna de fecha y hora a un formato de fecha y hora
+activity_data <- activity_data %>%
+  mutate(timestamp = ymd_hms(timestamp))
+
+# Calcular el número total de pasos por día
+total_steps_per_day <- activity_data %>%
+  group_by(date = date(timestamp)) %>%
+  summarize(total_steps = sum(steps, na.rm = TRUE))
+
+# Histograma del número total de pasos diarios
+ggplot(total_steps_per_day, aes(x = total_steps)) +
+  geom_histogram(bins = 30) +
+  labs(x = "Número total de pasos", y = "Frecuencia")
+
+# ... (continuar con el resto del análisis)
+
+# Gráfico de panel para días laborables y fines de semana
+activity_data <- activity_data %>%
+  mutate(weekday = weekdays(timestamp)) %>%
+  mutate(day_type = ifelse(weekday %in% c("sábado", "domingo"), "fin de semana", "día laborable"))
+
+ggplot(activity_data, aes(x = timestamp, y = steps)) +
+  geom_line(stat = "summary", fun.y = mean, aes(group = day_type)) +
+  facet_wrap(~ day_type) +
+  labs(x = "Hora del día", y = "Número medio de pasos")
